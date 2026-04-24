@@ -1,0 +1,178 @@
+{
+    "run_name": "shared_baseline",
+    "source_dataset": "data/transactions.csv",
+    "raw_rows": 10806,
+    "rows_after_deduplication": 10806,
+    "duplicates_removed": 0,
+    "rows_dropped_missing_target": 0,
+    "final_rows_before_split": 10806,
+    "duplicate_handling": "Removed exact duplicate rows before the shared split was created.",
+    "dropped_columns": [
+        "User ID",
+        "Date"
+    ],
+    "selected_feature_columns": [
+        "Description",
+        "Amount",
+        "Transaction Type",
+        "Account Name"
+    ],
+    "target_column": "Category",
+    "description_requested": true,
+    "description_included": true,
+    "missing_value_handling": {
+        "target": "Dropped rows with missing Category before splitting.",
+        "numeric": {
+            "Amount": "Filled missing values with the training-split median."
+        },
+        "categorical": {
+            "Description": "Filled missing values with the training-split mode.",
+            "Transaction Type": "Filled missing values with the training-split mode.",
+            "Account Name": "Filled missing values with the training-split mode."
+        }
+    },
+    "imputation_values_from_training_split": {
+        "Amount": 96.535,
+        "Description": "Credit Card Payment",
+        "Transaction Type": "debit",
+        "Account Name": "Platinum Card"
+    },
+    "missing_values_before_imputation": {
+        "train_raw_split": {
+            "Description": 0,
+            "Amount": 0,
+            "Transaction Type": 0,
+            "Account Name": 0
+        },
+        "valid_raw_split": {
+            "Description": 0,
+            "Amount": 0,
+            "Transaction Type": 0,
+            "Account Name": 0
+        }
+    },
+    "missing_values_after_imputation": {
+        "train_raw_split": {
+            "Description": 0,
+            "Amount": 0,
+            "Transaction Type": 0,
+            "Account Name": 0
+        },
+        "valid_raw_split": {
+            "Description": 0,
+            "Amount": 0,
+            "Transaction Type": 0,
+            "Account Name": 0
+        }
+    },
+    "split": {
+        "train_rows": 8644,
+        "validation_rows": 2162,
+        "validation_fraction": 0.2,
+        "random_state": 42,
+        "stratified": true
+    },
+    "class_distribution": {
+        "full_clean_dataset": {
+            "Credit Card Payment": 1781,
+            "Groceries": 1446,
+            "Restaurants": 1188,
+            "Shopping": 859,
+            "Utilities": 844,
+            "Gas & Fuel": 647,
+            "Paycheck": 637,
+            "Home Improvement": 441,
+            "Coffee Shops": 431,
+            "Auto Insurance": 383,
+            "Internet": 330,
+            "Alcohol & Bars": 276,
+            "Mobile Phone": 246,
+            "Mortgage & Rent": 246,
+            "Movies & DVDs": 231,
+            "Haircut": 222,
+            "Music": 194,
+            "Fast Food": 177,
+            "Electronics & Software": 105,
+            "Television": 81,
+            "Food & Dining": 23,
+            "Entertainment": 18
+        },
+        "train_raw_split": {
+            "Credit Card Payment": 1425,
+            "Groceries": 1157,
+            "Restaurants": 950,
+            "Shopping": 687,
+            "Utilities": 675,
+            "Gas & Fuel": 517,
+            "Paycheck": 509,
+            "Home Improvement": 353,
+            "Coffee Shops": 345,
+            "Auto Insurance": 306,
+            "Internet": 264,
+            "Alcohol & Bars": 221,
+            "Mobile Phone": 197,
+            "Mortgage & Rent": 197,
+            "Movies & DVDs": 185,
+            "Haircut": 178,
+            "Music": 155,
+            "Fast Food": 142,
+            "Electronics & Software": 84,
+            "Television": 65,
+            "Food & Dining": 18,
+            "Entertainment": 14
+        },
+        "valid_raw_split": {
+            "Credit Card Payment": 356,
+            "Groceries": 289,
+            "Restaurants": 238,
+            "Shopping": 172,
+            "Utilities": 169,
+            "Gas & Fuel": 130,
+            "Paycheck": 128,
+            "Home Improvement": 88,
+            "Coffee Shops": 86,
+            "Auto Insurance": 77,
+            "Internet": 66,
+            "Alcohol & Bars": 55,
+            "Mobile Phone": 49,
+            "Mortgage & Rent": 49,
+            "Movies & DVDs": 46,
+            "Haircut": 44,
+            "Music": 39,
+            "Fast Food": 35,
+            "Electronics & Software": 21,
+            "Television": 16,
+            "Food & Dining": 5,
+            "Entertainment": 4
+        }
+    },
+    "suggested_class_weights_from_training_split": {
+        "Alcohol & Bars": 1.7778691896338956,
+        "Auto Insurance": 1.2840166369578134,
+        "Coffee Shops": 1.138866930171278,
+        "Credit Card Payment": 0.275725677830941,
+        "Electronics & Software": 4.677489177489178,
+        "Entertainment": 28.064935064935064,
+        "Fast Food": 2.76696542893726,
+        "Food & Dining": 21.828282828282827,
+        "Gas & Fuel": 0.7599788992438896,
+        "Groceries": 0.33959299127838455,
+        "Haircut": 2.2073544433094994,
+        "Home Improvement": 1.1130569147566314,
+        "Internet": 1.4882920110192837,
+        "Mobile Phone": 1.9944623904014767,
+        "Mortgage & Rent": 1.9944623904014767,
+        "Movies & DVDs": 2.1238329238329237,
+        "Music": 2.534897360703812,
+        "Paycheck": 0.7719235577781747,
+        "Restaurants": 0.4135885167464115,
+        "Shopping": 0.5719200741034802,
+        "Television": 6.044755244755245,
+        "Utilities": 0.5820875420875421
+    },
+    "evaluation_setup": {
+        "shared_baseline_contract": "All models must start from the same cleaned train_raw_split.csv and valid_raw_split.csv files produced by this script.",
+        "holdout_validation": "Use valid_raw_split.csv as the common held-out validation set so model comparisons differ by model behavior rather than baseline data handling.",
+        "model_specific_step_boundary": "Encoding, scaling, text featurization, and other model-specific transforms must happen after this baseline handoff."
+    }
+}

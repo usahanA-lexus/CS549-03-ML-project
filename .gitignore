@@ -416,3 +416,16 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Project-specific ignores
+.vscode/
+*.joblib
+processed_output/*
+!processed_output/shared_baseline/
+processed_output/shared_baseline/*
+!processed_output/shared_baseline/train_raw_split.csv
+!processed_output/shared_baseline/valid_raw_split.csv
+!processed_output/shared_baseline/preprocessing_summary.json
+*.csv
+!processed_output/shared_baseline/train_raw_split.csv
+!processed_output/shared_baseline/valid_raw_split.csv
