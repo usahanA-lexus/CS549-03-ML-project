@@ -55,3 +55,67 @@ python scripts/preprocess.py \
 - train/validation split size and random seed
 - whether `Description` was included
 - shared evaluation setup for the held-out validation split
+
+
+
+
+## SVM Model (Deryn Cabana)
+
+The SVM model is implemented in:
+
+```
+scripts/train_svm.py
+```
+
+This script uses the shared baseline splits and evaluates different modeling configurations through a single configuration switch.
+
+### How to Run
+
+From the project root:
+
+```bash
+python scripts/train_svm.py
+```
+
+### Configuration Modes
+
+Edit the `MODE` variable inside `train_svm.py` to select the experiment:
+
+- `one_hot`  
+  Uses one-hot encoding for all categorical features, including Description. No class weighting.
+
+- `one_hot_balanced`  
+  Same as above, but uses class weighting to address class imbalance.
+
+- `tfidf`  
+  Uses TF-IDF vectorization for the Description field and one-hot encoding for other categorical features. Includes class weighting.
+
+- `no_desc`  
+  Excludes the Description feature entirely. Uses one-hot encoding for remaining categorical features with class weighting.
+
+### Hyperparameter Tuning
+
+All configurations use GridSearchCV to tune the SVM regularization parameter `C` over:
+
+```
+[0.01, 0.1, 1, 10]
+```
+
+using 3-fold cross-validation and weighted F1 score.
+
+### Output
+
+Each run prints:
+
+- Best hyperparameters
+- Accuracy on validation set
+- Classification report (precision, recall, F1-score)
+- Confusion matrix
+
+### Notes
+
+- All models use the same preprocessing baseline for fair comparison.
+- Experiments are designed to evaluate the impact of:
+  - class imbalance handling
+  - text feature representation
+  - feature inclusion/exclusion
