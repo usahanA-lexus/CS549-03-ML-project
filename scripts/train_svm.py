@@ -16,7 +16,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 # "one_hot_balanced"
 # "tfidf"
 # "no_desc"
-MODE = "one_hot_balanced"
+MODE = "tfidf"  # Change this to switch modes
 
 # Load data
 train_df = pd.read_csv("processed_output/shared_baseline/train_raw_split.csv")
