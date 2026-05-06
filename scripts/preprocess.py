@@ -14,6 +14,45 @@ BASE_CATEGORICAL_FEATURES = ["Transaction Type", "Account Name"]
 OPTIONAL_DESCRIPTION_COLUMN = "Description"
 DROP_COLUMNS = ["User ID", "Date"]
 
+CATEGORY_MAP = {
+    # Food & Drink
+    "Alcohol & Bars": "Food & Drink",
+    "Coffee Shops": "Food & Drink",
+    "Fast Food": "Food & Drink",
+    "Food & Dining": "Food & Drink",
+    "Restaurants": "Food & Drink",
+    "Groceries": "Food & Drink",
+
+    # Shopping
+    "Shopping": "Shopping",
+    "Electronics & Software": "Shopping",
+
+    # Housing
+    "Mortgage & Rent": "Housing",
+    "Home Improvement": "Housing",
+
+    # Transportation
+    "Gas & Fuel": "Transportation",
+    "Auto Insurance": "Transportation",
+
+    # Utilities & Services
+    "Internet": "Utilities & Services",
+    "Mobile Phone": "Utilities & Services",
+    "Utilities": "Utilities & Services",
+
+    # Entertainment
+    "Entertainment": "Entertainment",
+    "Movies & DVDs": "Entertainment",
+    "Music": "Entertainment",
+    "Television": "Entertainment",
+
+    # Keep as-is
+    # "Groceries": "Groceries",
+    "Haircut": "Haircut",
+    "Credit Card Payment": "Credit Card Payment",
+    "Paycheck": "Paycheck",
+}
+
 
 def normalize_columns(df):
     df = df.copy()
@@ -148,6 +187,15 @@ def main():
 
     selected_columns = feature_columns + [TARGET_COLUMN]
     df = df[selected_columns].copy()
+    df[TARGET_COLUMN] = df[TARGET_COLUMN].map(CATEGORY_MAP)
+
+    # Drop rows with unmapped categories (safety check, ideally should be none after mapping)
+    before = len(df)
+    df = df.dropna(subset=[TARGET_COLUMN]).copy()
+    after = len(df)
+
+    if before != after:
+        print(f"Warning: Dropped {before - after} rows with unmapped categories during mapping.")
 
     rows_before_target_drop = len(df)
     df = df.dropna(subset=[TARGET_COLUMN]).copy()
@@ -218,6 +266,7 @@ def main():
         "dropped_columns": dropped_columns,
         "selected_feature_columns": feature_columns,
         "target_column": TARGET_COLUMN,
+        "label_transformation": "Original categories were grouped into broader categories to reduce overlap and improve separability.",
         "description_requested": requested_description,
         "description_included": description_included,
         "missing_value_handling": {
