@@ -84,7 +84,7 @@ def run_exp2(train_path: Path, out_dir: Path):
     env["VAL_PATH"] = str(VAL_PATH).replace("\\", "/")
     env["OUT_DIR"] = str(out_dir).replace("\\", "/")
 
-    cmd = [str(PROJECT_ROOT / ".venv/Scripts/python.exe"), "scripts/experiment_2_filter_suspicious_rows.py"]
+    cmd = [str(PROJECT_ROOT / ".venv/Scripts/python.exe"), "scripts/logistic_regression/experiment_2_filter_suspicious_rows.py"]
     subprocess.run(cmd, check=True, env=env)
 
 
@@ -306,3 +306,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
