@@ -1,5 +1,3 @@
-# scripts/experiment_2_filter_suspicious_rows.py
-
 import os
 import re
 import numpy as np
@@ -14,12 +12,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, f1_score, classification_report
 from sklearn.model_selection import StratifiedKFold
 
-TRAIN_PATH = os.getenv("TRAIN_PATH", "processed_output/shared_baseline/train_raw_split.csv")
-VAL_PATH = os.getenv("VAL_PATH", "processed_output/shared_baseline/valid_raw_split.csv")
-OUT_DIR = os.getenv("OUT_DIR", "processed_output/exp2_filter_suspicious")
-SUSPICIOUS_PROB_THRESHOLD = float(os.getenv("SUSPICIOUS_PROB_THRESHOLD", "0.20"))
-LR_C = float(os.getenv("LR_C", "2.0"))
-TFIDF_MAX_FEATURES = int(os.getenv("TFIDF_MAX_FEATURES", "10000"))
+TRAIN_PATH = "processed_output/shared_baseline/train_raw_split.csv"
+VAL_PATH = "processed_output/shared_baseline/valid_raw_split.csv"
+OUT_DIR = "processed_output/final_capped_filter"
 
 os.makedirs(OUT_DIR, exist_ok=True)
 
@@ -55,7 +50,6 @@ def amount_bucket(v):
 def add_features(df):
     df = df.copy()
     df.columns = df.columns.str.strip()
-
     if "Description" not in df.columns:
         df["Description"] = ""
     if "Transaction Type" not in df.columns:
@@ -74,7 +68,7 @@ def build_model():
 
     preprocessor = ColumnTransformer(
         transformers=[
-            ("text", TfidfVectorizer(max_features=TFIDF_MAX_FEATURES, min_df=2, max_df=0.95, stop_words="english"), text_col),
+            ("text", TfidfVectorizer(max_features=10000, min_df=2, max_df=0.95, stop_words="english"), text_col),
             ("cat", Pipeline([
                 ("imputer", SimpleImputer(strategy="most_frequent")),
                 ("onehot", OneHotEncoder(handle_unknown="ignore"))
@@ -84,7 +78,7 @@ def build_model():
 
     model = Pipeline([
         ("prep", preprocessor),
-        ("clf", LogisticRegression(max_iter=3000, C=LR_C, class_weight="balanced"))
+        ("clf", LogisticRegression(max_iter=3000, C=2.0, class_weight="balanced"))
     ])
     return model
 
@@ -100,7 +94,7 @@ oof_true_prob = np.zeros(len(train_df), dtype=float)
 
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
-for fold, (tr_idx, te_idx) in enumerate(cv.split(X, y), start=1):
+for tr_idx, te_idx in cv.split(X, y):
     model = build_model()
     model.fit(X.iloc[tr_idx], y.iloc[tr_idx])
 
@@ -114,36 +108,67 @@ for fold, (tr_idx, te_idx) in enumerate(cv.split(X, y), start=1):
         true_label = y.iloc[row_idx]
         oof_true_prob[row_idx] = proba[pos, class_to_idx[true_label]]
 
-suspicious = (oof_pred != y.values) & (oof_true_prob < SUSPICIOUS_PROB_THRESHOLD)
+suspicious_score = 1.0 - oof_true_prob
+wrong_flag = (oof_pred != y.values).astype(int)
+rank_score = suspicious_score + 0.25 * wrong_flag
 
-train_filtered = train_df.loc[~suspicious].copy()
+train_scored = train_df.copy()
+train_scored["cv_pred"] = oof_pred
+train_scored["true_label_prob"] = oof_true_prob
+train_scored["wrong_flag"] = wrong_flag
+train_scored["rank_score"] = rank_score
 
-final_model = build_model()
-final_model.fit(train_filtered[feature_cols], train_filtered[TARGET])
-pred = final_model.predict(val_df[feature_cols])
+caps = [0.05, 0.10, 0.15]
+results = []
 
-acc = accuracy_score(val_df[TARGET], pred)
-wf1 = f1_score(val_df[TARGET], pred, average="weighted")
-mf1 = f1_score(val_df[TARGET], pred, average="macro")
+for cap in caps:
+    n_remove = max(1, int(len(train_scored) * cap))
+    worst_idx = train_scored.sort_values("rank_score", ascending=False).head(n_remove).index
+    keep_mask = ~train_scored.index.isin(worst_idx)
 
-pd.DataFrame({
-    "metric": ["accuracy", "weighted_f1", "macro_f1", "rows_removed"],
-    "value": [acc, wf1, mf1, int(suspicious.sum())]
-}).to_csv(f"{OUT_DIR}/metrics.csv", index=False)
+    filtered_train = train_scored.loc[keep_mask].copy()
 
-diag = train_df.copy()
-diag["cv_pred"] = oof_pred
-diag["true_label_prob"] = oof_true_prob
-diag["flagged_suspicious"] = suspicious
-diag.to_csv(f"{OUT_DIR}/training_noise_scores.csv", index=False)
+    final_model = build_model()
+    final_model.fit(filtered_train[feature_cols], filtered_train[TARGET])
+    pred = final_model.predict(val_df[feature_cols])
 
-val_out = val_df.copy()
-val_out["prediction"] = pred
-val_out.to_csv(f"{OUT_DIR}/predictions.csv", index=False)
+    acc = accuracy_score(val_df[TARGET], pred)
+    wf1 = f1_score(val_df[TARGET], pred, average="weighted")
+    mf1 = f1_score(val_df[TARGET], pred, average="macro")
 
-with open(f"{OUT_DIR}/report.txt", "w", encoding="utf-8") as f:
-    f.write(f"Accuracy: {acc}\n")
-    f.write(f"Weighted F1: {wf1}\n")
-    f.write(f"Macro F1: {mf1}\n")
-    f.write(f"Rows removed: {int(suspicious.sum())}\n\n")
-    f.write(classification_report(val_df[TARGET], pred))
+    results.append({
+        "cap_fraction": cap,
+        "rows_removed": n_remove,
+        "rows_kept": int(keep_mask.sum()),
+        "accuracy": acc,
+        "weighted_f1": wf1,
+        "macro_f1": mf1
+    })
+
+    pred_out = val_df.copy()
+    pred_out["prediction"] = pred
+    pred_out.to_csv(f"{OUT_DIR}/predictions_cap_{int(cap*100)}.csv", index=False)
+
+results_df = pd.DataFrame(results).sort_values("weighted_f1", ascending=False)
+results_df.to_csv(f"{OUT_DIR}/cap_results.csv", index=False)
+train_scored.to_csv(f"{OUT_DIR}/training_noise_scores.csv", index=False)
+
+best_cap = results_df.iloc[0]["cap_fraction"]
+best_remove = int(len(train_scored) * best_cap)
+best_idx = train_scored.sort_values("rank_score", ascending=False).head(best_remove).index
+best_keep_mask = ~train_scored.index.isin(best_idx)
+best_train = train_scored.loc[best_keep_mask].copy()
+
+best_model = build_model()
+best_model.fit(best_train[feature_cols], best_train[TARGET])
+best_pred = best_model.predict(val_df[feature_cols])
+
+with open(f"{OUT_DIR}/best_report.txt", "w", encoding="utf-8") as f:
+    f.write(results_df.to_string(index=False))
+    f.write("\n\n")
+    f.write(f"Best cap fraction: {best_cap}\n")
+    f.write(f"Rows removed: {best_remove}\n\n")
+    f.write(classification_report(val_df[TARGET], best_pred))
+
+print(results_df)
+print(f"Best cap fraction: {best_cap}")

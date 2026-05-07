@@ -1,0 +1,20 @@
+Logistic Regression Compiled Scores
+Generated: 2026-05-06 21:54:22
+
+Runs (sorted by weighted_f1 desc):
+- iterative_exp2_selective_cleaning_best: accuracy=0.175763, weighted_f1=0.191482, macro_f1=0.147961 | source=iterative_exp2_selective_cleaning/iterative_summary.json | Best iterative checkpoint
+- exp3_repeated_cv_filter: accuracy=0.157724, weighted_f1=0.168986, macro_f1=0.144129 | source=exp3_repeated_cv_filter/metrics.csv | Repeated-CV filter baseline
+- hybrid_second_stage_best: accuracy=0.147549, weighted_f1=0.162501, macro_f1=0.138832 | source=hybrid_second_stage_experiments/results.csv | Best method: error_gating_ae_q0.5
+- exp2_filter_suspicious: accuracy=0.150786, weighted_f1=0.158862, macro_f1=0.139321 | source=exp2_filter_suspicious/metrics.csv | Suspicious-row filtering
+- advanced_filters_best_weighted: accuracy=0.151249, weighted_f1=0.158118, macro_f1=0.137482 | source=advanced_filter_experiments/best_weighted.csv | Best advanced filter candidate
+- exp1_conservative_relabel: accuracy=0.150324, weighted_f1=0.158094, macro_f1=0.136308 | source=exp1_conservative_relabel/metrics.csv | Conservative relabel pass
+- hybrid_classaware_best_weighted: accuracy=0.138298, weighted_f1=0.142606, macro_f1=0.132269 | source=hybrid_classaware_experiments/best_weighted.csv | Best hybrid/class-aware candidate
+- final_capped_filter_best: accuracy=0.138760, weighted_f1=0.141789, macro_f1=0.132773 | source=final_capped_filter/cap_results.csv | Best cap_fraction=0.05
+- exp2_best_tuned: accuracy=0.109621, weighted_f1=0.121440, macro_f1=0.086362 | source=exp2_best_tuned/metrics.csv | Best tuned Exp2 config
+- exp2_filter_suspicious_cleaned: accuracy=0.104070, weighted_f1=0.116094, macro_f1=0.081218 | source=exp2_filter_suspicious_cleaned/metrics.csv | Suspicious-row filtering on cleaned labels
+- delta_autoencoder_focal_best: accuracy=0.031452, weighted_f1=0.039996, macro_f1=0.018479 | source=delta_autoencoder_focal_experiments/results.csv | Best method: delta_sigma_features
+- signal_labelnoise_best: accuracy=0.030065, weighted_f1=0.037087, macro_f1=0.017654 | source=signal_labelnoise_experiments/results.csv | Best method: baseline_retrain
+
+Best overall run: iterative_exp2_selective_cleaning_best
+Best metrics: accuracy=0.175763, weighted_f1=0.191482, macro_f1=0.147961
+Best source: iterative_exp2_selective_cleaning/iterative_summary.json
