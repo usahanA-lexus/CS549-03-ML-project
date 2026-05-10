@@ -5,8 +5,9 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler, FunctionTransfo
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from sklearn.metrics import ConfusionMatrixDisplay, classification_report, confusion_matrix, accuracy_score
 from sklearn.feature_extraction.text import TfidfVectorizer
+from matplotlib import pyplot as plt
 
 # =========================
 # CONFIGURATION SWITCH
@@ -110,4 +111,10 @@ print("\nClassification Report:")
 print(classification_report(y_valid, y_pred, zero_division=0))
 
 print("\nConfusion Matrix:")
-print(confusion_matrix(y_valid, y_pred))
+cm = confusion_matrix(y_valid, y_pred)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=best_model.classes_)
+disp.plot(cmap=plt.cm.Blues)
+# Rotate x-axis labels for better readability
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout() # Ensure labels are not cut off
+plt.show()
